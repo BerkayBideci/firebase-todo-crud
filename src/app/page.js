@@ -10,7 +10,7 @@ import { db } from './firebase';
 import { query, collection, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 
 const style = {
-  bg: `h-screen w-screen bg-gradient-to-b from-purple-500 to-pink-500 p-10`,
+  bg: `p-10`,
   container: `bg-violet-50 max-w-[50rem] w-full mx-auto rounded-xl shadow-xl p-5`,
   heading: `text-4xl font-bold text-center p-2 text-violet-950 mb-2`,
   form: `flex justify-between`,
