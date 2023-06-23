@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai'
+import { BsCloudUpload } from 'react-icons/bs'
+import { MdOutlineFileDownloadDone } from 'react-icons/md'
+import { ImCancelCircle } from 'react-icons/im'
 import Todo from './Todo';
 import { db } from './firebase';
 import { query, collection, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
@@ -19,10 +22,12 @@ const style = {
 
 export default function Home() {
   const [todos, setTodos] = useState([])
+  const [selectedTodoId, setSelectedTodoId] = useState(null)
   const [editTodo, setEditTodo] = useState('')
   const [editMode, setEditMode] = useState(false)
   const [input, setInput] = useState('')
   const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(false);
 
   // Create
   const handleCreateTodo = async (e) => {
@@ -62,13 +67,33 @@ export default function Home() {
   }
 
   const handleEditTodo = async (todo) => {
-    setEditMode(!editMode)
+    setEditMode(true)
+    setSelectedTodoId(todo.id)
+  }
+
+  const handleDisableEditTodo = () => {
+    setEditMode(false)
+    setEditTodo('');
+    setSelectedTodoId(null)
+  }
+
+  const handleSaveEditTodo = async () => {
+    const todo = todos.find((todo) => todo.id === selectedTodoId);
     if (editTodo.trim() !== '') {
+      setIsLoading(true)
       await updateDoc(doc(db, 'todos', todo.id), {
         text: editTodo
       })
+      setEditMode(false);
+      setEditTodo('');
+      setSelectedTodoId(null);
+      setIsLoading(false)
+    } else {
+      setError('Edit field can\'t be empty!')
+      setTimeout(() => {
+        setError(null)
+      }, 3500)
     }
-    setEditTodo('')
   }
 
   // Delete
@@ -91,10 +116,12 @@ export default function Home() {
       </form>
       <ul>
         {todos.map((todo, index) => <Todo key={index} todo={todo} toggleComplete={toggleComplete} handleDeleteTodo={handleDeleteTodo} handleEditTodo={handleEditTodo} />)}
-        {editMode && todos.length > 0 &&
+        {editMode && selectedTodoId && todos.length > 0 &&
           <div className={style.form}>
             <input className={style.input} type='text' placeholder='Edit Todo' value={editTodo} onChange={(e) => setEditTodo(e.target.value)}>
             </input>
+            {isLoading ? <button className={style.button}><BsCloudUpload size={30} /></button> : <button className={style.button}><MdOutlineFileDownloadDone size={30} onClick={handleSaveEditTodo} /></button>}
+            <button className={style.button} onClick={handleDisableEditTodo}><ImCancelCircle size={30} /></button>
           </div>}
       </ul>
       {error && <p className={style.error}>{error}</p>}
